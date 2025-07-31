@@ -1,26 +1,28 @@
-import datetime
+import time
 import os
 import pandas as pd
 import sys
 
 #TODO user prompt for start and stop time
-timeStart = datetime.datetime(2017, 6, 18, 0, 0)
-currentTime = datetime.datetime(2017, 6, 18, 0, 5)
 
+#unixTimestamp = int(time.time())
+
+startTime = 1497771600
+endTime = startTime + 5
 
 loggers = [
     ("RHIC/Rf/LowLevel/CeCPoP/Gun/LLRF_Gun_Voltage_Fast_STRIP",             "VcavKvPickup"),
-    ("RHIC/Rf/LowLevel/CeCPoP/Gun/LLRF_Gun_phase_Fast_STRIP",               "Gun_Pickup_Phase"),
+    ("RHIC/Rf/LowLevel/CeCPoP/Gun/Slot3_adc_phases",                        "adcCcPpc0.2b-llrf-cec1.3:vcavPhaseDegBArrayM"),
     ("RHIC/Rf/LowLevel/CeCPoP/Bunchers/LLRF_Bunchers_Voltage_Fast_STRIP",   "VcavKvPickup1"),
-    ("RHIC/Rf/LowLevel/CeCPoP/Bunchers/LLRF_Bunchers_phase_Fast_STRIP",     "Buncher_Pickup_Ph"),
+    ("RHIC/Rf/LowLevel/CeCPoP/Bunchers/Slot3_adc_phases",                   "adcCcPpc0.2b-llrf-cec2.3:vcavPhaseDegBArrayM"),
     ("RHIC/Rf/LowLevel/CeCPoP/5Cell/LLRF_704_Voltage_Fast_STRIP",           "VcavKvPickup"),
-    ("RHIC/Rf/LowLevel/CeCPoP/5Cell/LLRF_704_phase_Fast_STRIP",             "Linac_Pickup_Phase")
+    ("RHIC/Rf/LowLevel/CeCPoP/5Cell/adc_phases",                            "adcCcPpc0.2b-llrf-cec4.3:vcavPhaseDegBArrayM")
 ]
 
 avgs = []
 
 for log, dp in loggers:
-    fullCommand = f'exportLoggerData -logger {log} -start "{timeStart.strftime("%m/%d/%y %H:%M")}" -stop "{currentTime.strftime("%m/%d/%y %H:%M")}" -timeform unix -arrayformat OneElementPerLine -expr "colcurravg=arrayavg(cell({dp}[.])) colcurrsigma=arraysigma(cell({dp}[.]))" -outfile test.dat'
+    fullCommand = f'exportLoggerData -logger {log} -start {startTime} -stop {endTime} -timeform unix -arrayformat OneElementPerLine -expr "colcurravg=arrayavg(cell({dp}[.])) colcurrsigma=arraysigma(cell({dp}[.]))" -outfile test.dat'
 
     os.system(fullCommand)
     timestamps = []
@@ -48,5 +50,5 @@ df = pd.DataFrame(
     columns=["Amplitude","Phase"]
 )
 
-df.to_csv("output.csv")
-#df.to_excel("output.xlsx")
+df.to_csv(f"output-{startTime}.csv")
+#df.to_excel(f"output-{startTime}.xlsx")
